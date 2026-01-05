@@ -1,0 +1,50 @@
+{
+  "name": "wxt-module-safari-xcode",
+  "version": "0.0.1",
+  "description": "A WXT module that automatically converts Safari extensions to Xcode projects",
+  "keywords": [
+    "wxt",
+    "module",
+    "safari",
+    "xcode",
+    "browser-extension"
+  ],
+  "author": "rxliuli",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "setup": "pnpm build",
+    "build": "tsup src/index.ts --format esm --dts --out-dir dist --clean --external wxt",
+    "dev": "pnpm build --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rxliuli/wxt-module-safari-xcode.git"
+  },
+  "sideEffects": false,
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "wxt": "^0.20.13"
+  },
+  "optionalDependencies": {
+    "wxt": "^0.20.13"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "packageManager": "pnpm@10.26.2+sha512.0e308ff2005fc7410366f154f625f6631ab2b16b1d2e70238444dd6ae9d630a8482d92a451144debc492416896ed16f7b114a86ec68b8404b2443869e68ffda6",
+  "dependencies": {
+    "zx": "^8.8.5"
+  }
+}
