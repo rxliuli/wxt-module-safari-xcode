@@ -2,6 +2,8 @@
 
 A WXT module that automatically converts Safari extensions to Xcode projects and configures related settings after the build is complete.
 
+https://github.com/user-attachments/assets/4e7d425c-7c9b-4e24-bcea-185cde36b049
+
 ## Features
 
 - Automatically runs `xcrun safari-web-extension-converter` to convert the extension to an Xcode project
