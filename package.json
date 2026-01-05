@@ -1,6 +1,6 @@
 {
   "name": "wxt-module-safari-xcode",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A WXT module that automatically converts Safari extensions to Xcode projects",
   "keywords": [
     "wxt",
