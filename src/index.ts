@@ -29,6 +29,11 @@ export interface SafariXcodeOptions {
    * Defaults to '.output/{projectName}/' directory
    */
   outputPath?: string
+  /**
+   * Project type
+   * Defaults to "both" (MacOS and iOS)
+   */
+  projectType?: 'macos' | 'ios' | 'both'
 }
 
 export default defineWxtModule<SafariXcodeOptions>({
@@ -54,7 +59,8 @@ export default defineWxtModule<SafariXcodeOptions>({
       return
     }
 
-    const outputPath = options?.outputPath ?? `.output/${projectName}/`
+    const outputPath  = options?.outputPath  ?? `.output/${projectName}/`
+    const projectType = options?.projectType ?? 'both'
 
     wxt.hook('build:done', async (wxt) => {
       wxt.logger.info(`Converting ${highlight('Safari extension')} to ${highlight('Xcode project')}...`)
@@ -68,7 +74,17 @@ export default defineWxtModule<SafariXcodeOptions>({
       try {
         // Run safari-web-extension-converter
         wxt.logger.info(`Running ${highlight('safari-web-extension-converter')}...`)
-        await $`xcrun safari-web-extension-converter --bundle-identifier ${bundleIdentifier} --force --project-location ${outputPath} .output/safari-mv${wxt.config.manifestVersion}`
+
+        const flags = [
+          `--bundle-identifier ${bundleIdentifier}`,
+          '--force',
+          `--project-location ${outputPath}`,
+        ];
+
+        if (projectType === 'ios')   flags.push('--ios-only');
+        if (projectType === 'macos') flags.push('--macos-only');
+
+        await $`xcrun safari-web-extension-converter ${flags} .output/safari-mv${wxt.config.manifestVersion}`
 
         // Update project configuration
         wxt.logger.info(`Updating ${highlight('Xcode project config')}...`)
