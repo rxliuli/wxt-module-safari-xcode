@@ -6,13 +6,14 @@ export interface SafariPostBuildOptions {
   projectName: string
   appCategory: string
   developmentTeam?: string
+  outputPath: string
   rootPath: string
 }
 
 export async function updateProjectConfig(options: SafariPostBuildOptions) {
   const projectConfigPath = path.resolve(
     options.rootPath,
-    `.output/${options.projectName}/${options.projectName}.xcodeproj/project.pbxproj`,
+    `${options.outputPath}/${options.projectName}.xcodeproj/project.pbxproj`,
   )
   const packageJsonModule = await import(path.resolve(options.rootPath, 'package.json'), {
     with: { type: 'json' },
@@ -29,23 +30,23 @@ export async function updateProjectConfig(options: SafariPostBuildOptions) {
         `INFOPLIST_KEY_CFBundleDisplayName = ("?${options.projectName}"?);`,
         'g',
       ),
-      `INFOPLIST_KEY_CFBundleDisplayName = $1;\n				INFOPLIST_KEY_LSApplicationCategoryType = "${options.appCategory}";`,
+      `INFOPLIST_KEY_CFBundleDisplayName = $1;\n\t\t\t\tINFOPLIST_KEY_LSApplicationCategoryType = "${options.appCategory}";`,
     )
     .replace(
       new RegExp(`GCC_WARN_UNUSED_VARIABLE = YES;`, 'g'),
-      `GCC_WARN_UNUSED_VARIABLE = YES;\n				INFOPLIST_KEY_LSApplicationCategoryType = "${options.appCategory}";`,
+      `GCC_WARN_UNUSED_VARIABLE = YES;\n\t\t\t\tINFOPLIST_KEY_LSApplicationCategoryType = "${options.appCategory}";`,
     )
     .replace(
       new RegExp(
         `INFOPLIST_KEY_CFBundleDisplayName = ("?${options.projectName}"?);`,
         'g',
       ),
-      `INFOPLIST_KEY_CFBundleDisplayName = $1;\n				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;`,
+      `INFOPLIST_KEY_CFBundleDisplayName = $1;\n\t\t\t\tINFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;`,
     )
     .replaceAll(
       `COPY_PHASE_STRIP = NO;`,
       options.developmentTeam
-        ? `COPY_PHASE_STRIP = NO;\n				DEVELOPMENT_TEAM = ${options.developmentTeam};`
+        ? `COPY_PHASE_STRIP = NO;\n\t\t\t\tDEVELOPMENT_TEAM = ${options.developmentTeam};`
         : 'COPY_PHASE_STRIP = NO;',
     )
     .replace(
@@ -56,7 +57,7 @@ export async function updateProjectConfig(options: SafariPostBuildOptions) {
 }
 
 export async function updateInfoPlist(options: SafariPostBuildOptions) {
-  const projectPath = path.resolve(options.rootPath, '.output', options.projectName)
+  const projectPath = path.resolve(options.rootPath, options.outputPath)
   const files = await globby('**/*.plist', {
     cwd: projectPath,
   })
@@ -66,7 +67,7 @@ export async function updateInfoPlist(options: SafariPostBuildOptions) {
       path.resolve(projectPath, file),
       content.replaceAll(
         '</dict>\n</plist>',
-        '	<key>CFBundleVersion</key>\n	<string>$(CURRENT_PROJECT_VERSION)</string>\n</dict>\n</plist>',
+        '\t<key>CFBundleVersion</key>\n\t<string>$(CURRENT_PROJECT_VERSION)</string>\n</dict>\n</plist>',
       ),
     )
   }
