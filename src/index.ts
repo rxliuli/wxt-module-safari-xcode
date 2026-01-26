@@ -34,6 +34,11 @@ export interface SafariXcodeOptions {
    * Defaults to "both" (MacOS and iOS)
    */
   projectType?: 'macos' | 'ios' | 'both'
+  /**
+   * Open the Xcode project after creation
+   * Defaults to true, you may want to set this to false in CI environments
+   */
+  openProject?: boolean
 }
 
 export default defineWxtModule<SafariXcodeOptions>({
@@ -61,6 +66,7 @@ export default defineWxtModule<SafariXcodeOptions>({
 
     const outputPath  = options?.outputPath  ?? `.output/${projectName}/`
     const projectType = options?.projectType ?? 'both'
+    const openProject = options?.openProject ?? true
 
     wxt.hook('build:done', async (wxt) => {
       wxt.logger.info(`Converting ${highlight('Safari extension')} to ${highlight('Xcode project')}...`)
@@ -81,6 +87,7 @@ export default defineWxtModule<SafariXcodeOptions>({
           `--project-location ${outputPath}`,
         ];
 
+        if (!openProject)            flags.push('--no-open');
         if (projectType === 'ios')   flags.push('--ios-only');
         if (projectType === 'macos') flags.push('--macos-only');
 
