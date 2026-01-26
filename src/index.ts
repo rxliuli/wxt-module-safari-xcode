@@ -50,7 +50,7 @@ export default defineWxtModule<SafariXcodeOptions>({
     }
 
     wxt.hook('build:done', async (wxt) => {
-      wxt.logger.info('Converting Safari extension to Xcode project...')
+      wxt.logger.info(`Converting ${highlight('Safari extension')} to ${highlight('Xcode project')}...`)
 
       if (process.platform !== 'darwin') {
         const error = new Error('Safari Xcode conversion requires macOS.')
@@ -60,11 +60,11 @@ export default defineWxtModule<SafariXcodeOptions>({
 
       try {
         // Run safari-web-extension-converter
-        wxt.logger.info('Running safari-web-extension-converter...')
+        wxt.logger.info(`Running ${highlight('safari-web-extension-converter')}...`)
         await $`xcrun safari-web-extension-converter --bundle-identifier ${bundleIdentifier} --force --project-location .output .output/safari-mv${wxt.config.manifestVersion}`
 
         // Update project configuration
-        wxt.logger.info('Updating Xcode project config...')
+        wxt.logger.info(`Updating ${highlight('Xcode project config')}...`)
         await updateProjectConfig({
           projectName,
           appCategory,
@@ -73,7 +73,7 @@ export default defineWxtModule<SafariXcodeOptions>({
         })
 
         // Update Info.plist
-        wxt.logger.info('Updating Info.plist files...')
+        wxt.logger.info(`Updating ${highlight('Info.plist files')}...`)
         await updateInfoPlist({
           projectName,
           appCategory,
@@ -94,4 +94,8 @@ declare module 'wxt' {
   export interface InlineConfig {
     safariXcode?: SafariXcodeOptions
   }
+}
+
+function highlight(text: string): string {
+  return `\x1b[36m${text}\x1b[0m`
 }
