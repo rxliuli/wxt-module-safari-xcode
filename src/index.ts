@@ -52,6 +52,12 @@ export default defineWxtModule<SafariXcodeOptions>({
     wxt.hook('build:done', async (wxt) => {
       wxt.logger.info('Converting Safari extension to Xcode project...')
 
+      if (process.platform !== 'darwin') {
+        const error = new Error('Safari Xcode conversion requires macOS.')
+        wxt.logger.error('Safari Xcode conversion is only supported on macOS.', error)
+        throw error
+      }
+
       try {
         // Run safari-web-extension-converter
         wxt.logger.info('Running safari-web-extension-converter...')
