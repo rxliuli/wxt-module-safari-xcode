@@ -40,15 +40,18 @@ The module will automatically convert the extension to an Xcode project after th
 ## Configuration Options
 
 | Option             | Type     | Required | Description                                                                                   |
-| ------------------ | -------- | -------- | --------------------------------------------------------------------------------------------- |
+| ------------------ | -------- | :------: | --------------------------------------------------------------------------------------------- |
 | `projectName`      | `string` | ❌       | Safari project name. Defaults to `manifest.name` if not provided                              |
 | `appCategory`      | `string` | ✅       | App category, e.g., `'public.app-category.productivity'`                                      |
 | `bundleIdentifier` | `string` | ✅       | Bundle identifier, e.g., `'com.example.app'`                                                  |
 | `developmentTeam`  | `string` | ❌       | Apple Developer Team ID, e.g., `'ABC1234567'`. If not provided, must be set manually in Xcode |
+| `outputPath`       | `string` | ❌       | Custom output path for the Xcode project. Defaults to `.output/<projectName>`                 |
+| `projectType`      | `string` | ❌       | Project type: `'macos'`, `'ios'`, or `'both'`. Defaults to `'both'`                           |
+| `openProject`      | `boolean`| ❌       | Whether to open the Xcode project after conversion. Defaults to `true`                        |
 
 ## How It Works
 
-This module uses WXT's `build:done` hook to perform the following steps after the build completes:
+This module uses WXT's [`build:done`](https://wxt.dev/api/reference/wxt/interfaces/WxtHooks.html#build-done) hook to perform the following steps after the build completes:
 
 1. Run `xcrun safari-web-extension-converter` to convert the extension to a Safari Xcode project
 2. Read the version number from `package.json`
@@ -62,7 +65,7 @@ This module uses WXT's `build:done` hook to perform the following steps after th
 ## Notes
 
 - This module only executes when building for Safari browser (`wxt build -b safari`)
-- Requires macOS and Xcode Command Line Tools
+- Requires MacOS and Xcode Command Line Tools
 - If you want to read configuration from environment variables, ensure `.env.local` is added to `.gitignore`
 
 ## Examples
