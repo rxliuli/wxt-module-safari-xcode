@@ -1,4 +1,5 @@
 import 'wxt'
+import fs from 'node:fs/promises'
 import { defineWxtModule } from 'wxt/modules'
 import { $ } from 'zx'
 import { updateInfoPlist, updateProjectConfig } from './safari-utils'
@@ -37,7 +38,9 @@ export default defineWxtModule<SafariXcodeOptions>({
     const { appCategory, bundleIdentifier, developmentTeam } = options ?? {}
 
     // Use manifest.name as default projectName
-    const projectName = options?.projectName ?? wxt.config.manifest.name
+    const projectName = options?.projectName 
+      ?? wxt.config.manifest.name 
+      ?? await fs.readFile(`${wxt.config.root}/package.json`, 'utf-8').then((data) => JSON.parse(data).name)
 
     if (!projectName || !appCategory || !bundleIdentifier) {
       wxt.logger.warn(
@@ -52,7 +55,7 @@ export default defineWxtModule<SafariXcodeOptions>({
       try {
         // Run safari-web-extension-converter
         wxt.logger.info('Running safari-web-extension-converter...')
-        await $`xcrun safari-web-extension-converter --bundle-identifier ${bundleIdentifier} --force --project-location .output .output/safari-mv3`
+        await $`xcrun safari-web-extension-converter --bundle-identifier ${bundleIdentifier} --force --project-location .output .output/safari-mv${wxt.config.manifestVersion}`
 
         // Update project configuration
         wxt.logger.info('Updating Xcode project config...')
