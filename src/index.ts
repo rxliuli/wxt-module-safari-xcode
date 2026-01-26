@@ -55,7 +55,7 @@ export default defineWxtModule<SafariXcodeOptions>({
       try {
         // Run safari-web-extension-converter
         wxt.logger.info('Running safari-web-extension-converter...')
-        await $`xcrun safari-web-extension-converter --bundle-identifier ${bundleIdentifier} --force --project-location .output .output/safari-mv3`
+        await $`xcrun safari-web-extension-converter --bundle-identifier ${bundleIdentifier} --force --project-location .output .output/safari-mv${wxt.config.manifestVersion}`
 
         // Update project configuration
         wxt.logger.info('Updating Xcode project config...')
