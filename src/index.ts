@@ -64,7 +64,7 @@ export default defineWxtModule<SafariXcodeOptions>({
       return
     }
 
-    const outputPath  = options?.outputPath  ?? `.output/${projectName}/`
+    const outputPath  = options?.outputPath  ?? `.output/${projectName}`
     const projectType = options?.projectType ?? 'both'
     const openProject = options?.openProject ?? true
 
@@ -81,17 +81,19 @@ export default defineWxtModule<SafariXcodeOptions>({
         // Run safari-web-extension-converter
         wxt.logger.info(`Running ${highlight('safari-web-extension-converter')}...`)
 
-        const flags = [
-          `--bundle-identifier ${bundleIdentifier}`,
-          '--force',
-          `--project-location ${outputPath}`,
-        ];
+        const flags = ['--force', '--no-prompt'];
 
-        if (!openProject)            flags.push('--no-open');
         if (projectType === 'ios')   flags.push('--ios-only');
         if (projectType === 'macos') flags.push('--macos-only');
+        
+        if (!openProject) flags.push('--no-open');
 
-        await $`xcrun safari-web-extension-converter ${flags} .output/safari-mv${wxt.config.manifestVersion}`
+        await $`xcrun safari-web-extension-converter --bundle-identifier ${bundleIdentifier} --project-location .output ${flags} .output/safari-mv${wxt.config.manifestVersion}`
+
+        // Move to custom output path if needed
+        if (outputPath !== `.output/${projectName}`) {
+          await $`mv .output/${projectName} ${outputPath}`
+        }
 
         // Update project configuration
         wxt.logger.info(`Updating ${highlight('Xcode project config')}...`)
