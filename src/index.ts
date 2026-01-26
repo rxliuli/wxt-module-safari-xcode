@@ -24,6 +24,11 @@ export interface SafariXcodeOptions {
    * If not provided, the generated Xcode project will need to have the development team set manually
    */
   developmentTeam?: string
+  /**
+   * Output path for the Xcode project
+   * Defaults to '.output/{projectName}/' directory
+   */
+  outputPath?: string
 }
 
 export default defineWxtModule<SafariXcodeOptions>({
@@ -49,6 +54,8 @@ export default defineWxtModule<SafariXcodeOptions>({
       return
     }
 
+    const outputPath = options?.outputPath ?? `.output/${projectName}/`
+
     wxt.hook('build:done', async (wxt) => {
       wxt.logger.info(`Converting ${highlight('Safari extension')} to ${highlight('Xcode project')}...`)
 
@@ -61,12 +68,13 @@ export default defineWxtModule<SafariXcodeOptions>({
       try {
         // Run safari-web-extension-converter
         wxt.logger.info(`Running ${highlight('safari-web-extension-converter')}...`)
-        await $`xcrun safari-web-extension-converter --bundle-identifier ${bundleIdentifier} --force --project-location .output .output/safari-mv${wxt.config.manifestVersion}`
+        await $`xcrun safari-web-extension-converter --bundle-identifier ${bundleIdentifier} --force --project-location ${outputPath} .output/safari-mv${wxt.config.manifestVersion}`
 
         // Update project configuration
         wxt.logger.info(`Updating ${highlight('Xcode project config')}...`)
         await updateProjectConfig({
           projectName,
+          outputPath,
           appCategory,
           developmentTeam,
           rootPath: wxt.config.root,
@@ -76,6 +84,7 @@ export default defineWxtModule<SafariXcodeOptions>({
         wxt.logger.info(`Updating ${highlight('Info.plist files')}...`)
         await updateInfoPlist({
           projectName,
+          outputPath,
           appCategory,
           developmentTeam,
           rootPath: wxt.config.root,
