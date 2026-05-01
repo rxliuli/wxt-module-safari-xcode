@@ -24,7 +24,8 @@
   "scripts": {
     "setup": "pnpm build",
     "build": "tsup src/index.ts --format esm --dts --out-dir dist --clean --external wxt",
-    "dev": "pnpm build --watch"
+    "dev": "pnpm build --watch",
+    "test": "pnpm build && pnpm --filter wxt-safari-demo test"
   },
   "repository": {
     "type": "git",
