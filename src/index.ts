@@ -64,6 +64,13 @@ export default defineWxtModule<SafariXcodeOptions>({
       return
     }
 
+    const packageJsonRaw = await fs.readFile(`${wxt.config.root}/package.json`, 'utf-8')
+    if (!JSON.parse(packageJsonRaw).version) {
+      throw new Error(
+        'Safari Xcode module: package.json is missing a "version" field. Add a version (e.g. "0.1.0") so the Xcode project can be configured.',
+      )
+    }
+
     const outputPath  = options?.outputPath  ?? `.output/${projectName}`
     const projectType = options?.projectType ?? 'both'
     const openProject = options?.openProject ?? true
