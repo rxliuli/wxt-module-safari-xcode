@@ -41,7 +41,7 @@ The module will automatically convert the extension to an Xcode project after th
 
 | Option             | Type     | Required | Description                                                                                   |
 | ------------------ | -------- | -------- | --------------------------------------------------------------------------------------------- |
-| `projectName`      | `string` | ❌       | Safari project name. Defaults to `manifest.name` if not provided                              |
+| `projectName`      | `string` | ❌       | Safari project name. Falls back to `manifest.name`, then to the `name` field in `package.json` |
 | `appCategory`      | `string` | ✅       | App category, e.g., `'public.app-category.productivity'`                                      |
 | `bundleIdentifier` | `string` | ✅       | Bundle identifier, e.g., `'com.example.app'`                                                  |
 | `developmentTeam`  | `string` | ❌       | Apple Developer Team ID, e.g., `'ABC1234567'`. If not provided, must be set manually in Xcode |
@@ -62,6 +62,7 @@ This module uses WXT's `build:done` hook to perform the following steps after th
 ## Notes
 
 - This module only executes when building for Safari browser (`wxt build -b safari`)
+- Supports both MV2 and MV3 Safari builds (the build target is detected from `wxt.config.manifestVersion`)
 - Requires macOS and Xcode Command Line Tools
 - If you want to read configuration from environment variables, ensure `.env.local` is added to `.gitignore`
 
