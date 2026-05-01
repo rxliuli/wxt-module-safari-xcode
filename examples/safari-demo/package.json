@@ -1,0 +1,17 @@
+{
+  "name": "wxt-safari-demo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "wxt build -b safari",
+    "build:mv3": "wxt build -b safari --mv3",
+    "postinstall": "wxt prepare"
+  },
+  "dependencies": {
+    "wxt-module-safari-xcode": "workspace:*"
+  },
+  "devDependencies": {
+    "wxt": "^0.20.13"
+  }
+}
