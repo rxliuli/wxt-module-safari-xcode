@@ -17,6 +17,6 @@ jobs:
           node-version: 24
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --ignore-scripts
       - name: Run regression suite
         run: pnpm test

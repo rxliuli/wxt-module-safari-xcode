@@ -7,7 +7,7 @@
     "build": "wxt build -b safari",
     "build:mv3": "wxt build -b safari --mv3",
     "test": "vitest run",
-    "postinstall": "wxt prepare"
+    "prepare-types": "wxt prepare"
   },
   "dependencies": {
     "wxt-module-safari-xcode": "workspace:*"
