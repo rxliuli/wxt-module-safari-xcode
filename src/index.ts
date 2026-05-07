@@ -108,6 +108,7 @@ export default defineWxtModule<SafariXcodeOptions>({
           projectName,
           outputPath,
           appCategory,
+          bundleIdentifier,
           developmentTeam,
           rootPath: wxt.config.root,
         })
@@ -118,6 +119,7 @@ export default defineWxtModule<SafariXcodeOptions>({
           projectName,
           outputPath,
           appCategory,
+          bundleIdentifier,
           developmentTeam,
           rootPath: wxt.config.root,
         })

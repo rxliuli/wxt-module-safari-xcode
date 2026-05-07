@@ -5,6 +5,7 @@ import fs from 'node:fs/promises'
 export interface SafariPostBuildOptions {
   projectName: string
   appCategory: string
+  bundleIdentifier: string
   developmentTeam?: string
   outputPath: string
   rootPath: string
@@ -21,6 +22,24 @@ export async function updateProjectConfig(options: SafariPostBuildOptions) {
   const packageJson = packageJsonModule.default as { version: string }
   const content = await fs.readFile(projectConfigPath, 'utf-8')
   const newContent = content
+    // Apple's safari-web-extension-converter rewrites the parent app's bundle id
+    // by replacing the last segment with the (capitalised) project name — e.g.
+    // `com.acme.foo` becomes `com.acme.FooApp` — while leaving the extension at
+    // `com.acme.foo.Extension`. Xcode then rejects the build because the embedded
+    // extension id no longer prefixes the parent. Force the parent back to the
+    // user-supplied bundleIdentifier so the prefix invariant holds. Values may
+    // be emitted quoted (e.g. when they contain a hyphen), so strip surrounding
+    // quotes before checking the suffix.
+    .replace(
+      /PRODUCT_BUNDLE_IDENTIFIER = ("[^"]*"|[^;]+);/g,
+      (match, raw: string) => {
+        const id =
+          raw.startsWith('"') && raw.endsWith('"') ? raw.slice(1, -1) : raw
+        return id.endsWith('.Extension')
+          ? match
+          : `PRODUCT_BUNDLE_IDENTIFIER = ${options.bundleIdentifier};`
+      },
+    )
     .replaceAll(
       'MARKETING_VERSION = 1.0;',
       `MARKETING_VERSION = ${packageJson.version};`,
