@@ -21,25 +21,7 @@ export async function updateProjectConfig(options: SafariPostBuildOptions) {
   })
   const packageJson = packageJsonModule.default as { version: string }
   const content = await fs.readFile(projectConfigPath, 'utf-8')
-  const newContent = content
-    // Apple's safari-web-extension-converter rewrites the parent app's bundle id
-    // by replacing the last segment with the (capitalised) project name — e.g.
-    // `com.acme.foo` becomes `com.acme.FooApp` — while leaving the extension at
-    // `com.acme.foo.Extension`. Xcode then rejects the build because the embedded
-    // extension id no longer prefixes the parent. Force the parent back to the
-    // user-supplied bundleIdentifier so the prefix invariant holds. Values may
-    // be emitted quoted (e.g. when they contain a hyphen), so strip surrounding
-    // quotes before checking the suffix.
-    .replace(
-      /PRODUCT_BUNDLE_IDENTIFIER = ("[^"]*"|[^;]+);/g,
-      (match, raw: string) => {
-        const id =
-          raw.startsWith('"') && raw.endsWith('"') ? raw.slice(1, -1) : raw
-        return id.endsWith('.Extension')
-          ? match
-          : `PRODUCT_BUNDLE_IDENTIFIER = ${options.bundleIdentifier};`
-      },
-    )
+  const newContent = normaliseBundleIds(content, options.bundleIdentifier)
     .replaceAll(
       'MARKETING_VERSION = 1.0;',
       `MARKETING_VERSION = ${packageJson.version};`,
@@ -95,4 +77,49 @@ export async function updateInfoPlist(options: SafariPostBuildOptions) {
 function parseProjectVersion(version: string) {
   const [major, minor, patch] = version.split('.').map(Number)
   return major * 10000 + minor * 100 + patch
+}
+
+const BUNDLE_ID_REGEX = /PRODUCT_BUNDLE_IDENTIFIER = ("[^"]*"|[^;]+);/g
+
+function unwrap(raw: string): string {
+  return raw.startsWith('"') && raw.endsWith('"') ? raw.slice(1, -1) : raw
+}
+
+function quote(value: string): string {
+  // Xcode pbxproj only needs quotes when the value isn't a bare identifier
+  // (letters, digits, dot, underscore, hyphen). Hyphens are bare-safe but
+  // Apple often quotes them anyway — match that style by quoting whenever
+  // the value isn't strictly bare-safe AND when it contains a hyphen.
+  return /^[A-Za-z0-9._]+$/.test(value) ? value : `"${value}"`
+}
+
+/**
+ * Normalise every PRODUCT_BUNDLE_IDENTIFIER so the parent app's id matches
+ * the user-supplied bundleIdentifier and sub-targets share that prefix.
+ *
+ * Apple's `xcrun safari-web-extension-converter` sometimes mangles the
+ * parent app's id (e.g. uppercasing the last segment to match the project
+ * name) while leaving sub-target ids alone — or vice versa — depending on
+ * Xcode version and which `--ios-only`/`--macos-only` flag was passed. The
+ * resulting prefix mismatch makes Xcode refuse the build with "Embedded
+ * binary's bundle identifier is not prefixed with the parent app's".
+ *
+ * Strategy: the shortest unique id in the pbxproj is the parent app's
+ * (Apple-mangled) stem; sub-targets append a suffix to it. Replace that
+ * stem everywhere with the user-supplied bundleIdentifier, preserving any
+ * suffix (`.Extension`, ` Extension`, etc.).
+ */
+export function normaliseBundleIds(content: string, bundleIdentifier: string): string {
+  const ids = [...content.matchAll(BUNDLE_ID_REGEX)].map((m) => unwrap(m[1]))
+  if (ids.length === 0) return content
+
+  const stem = [...new Set(ids)].sort((a, b) => a.length - b.length)[0]
+  if (!stem || stem === bundleIdentifier) return content
+
+  return content.replace(BUNDLE_ID_REGEX, (match, raw: string) => {
+    const id = unwrap(raw)
+    if (!id.startsWith(stem)) return match
+    const newId = bundleIdentifier + id.slice(stem.length)
+    return `PRODUCT_BUNDLE_IDENTIFIER = ${quote(newId)};`
+  })
 }

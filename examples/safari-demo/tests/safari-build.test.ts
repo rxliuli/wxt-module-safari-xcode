@@ -20,17 +20,24 @@ function extractBundleIds(pbx: string): string[] {
 
 function assertBundleIdsConsistent(pbx: string) {
   const ids = extractBundleIds(pbx)
-  expect(ids.length).toBeGreaterThan(0)
-  // Both targets must be present — otherwise a buggy fix that strips
-  // `.Extension` from every id would silently pass the per-id checks below.
-  expect(ids).toContain(DEMO_BUNDLE_ID)
-  expect(ids).toContain(`${DEMO_BUNDLE_ID}.Extension`)
-  for (const id of ids) {
-    if (id.endsWith('.Extension')) {
-      expect(id).toBe(`${DEMO_BUNDLE_ID}.Extension`)
-    } else {
-      expect(id).toBe(DEMO_BUNDLE_ID)
-    }
+  // Diagnostic on failure: surface the actual ids rather than vitest's
+  // truncated `[ …(8) ]` so we can tell which Apple-converter quirk we hit.
+  const ctx = `bundle ids: ${JSON.stringify(ids)}`
+  expect(ids.length, ctx).toBeGreaterThan(0)
+
+  const parentIds = ids.filter((id) => id === DEMO_BUNDLE_ID)
+  const subIds = ids.filter((id) => id !== DEMO_BUNDLE_ID)
+
+  // Both kinds must exist — without either, a buggy fix that collapses every
+  // id into one value would silently pass the per-id check below.
+  expect(parentIds.length, ctx).toBeGreaterThan(0)
+  expect(subIds.length, ctx).toBeGreaterThan(0)
+
+  // Xcode's "embedded binary's bundle identifier is not prefixed" error is
+  // what we're guarding against — the only invariant that matters is that
+  // every sub-target id is strictly prefixed by the parent's id.
+  for (const id of subIds) {
+    expect(id.startsWith(DEMO_BUNDLE_ID), `${ctx}; offender: ${id}`).toBe(true)
   }
 }
 
